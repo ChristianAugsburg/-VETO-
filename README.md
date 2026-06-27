@@ -2,6 +2,8 @@
 
 Ein elegantes, webbasiertes Wort-Umschreibungs-Spiel im klassischen "Tabu"-Stil, optimiert für den direkten Einsatz im Unterricht über **Moodle**-Textseiten. Das System bietet ein integriertes Dozenten-Dashboard, einen lokalen persistenten Cache und eine dynamische, automatische **Präsentationsansicht (Beamer-Fenster)** für das Smartboard inklusive nativer Toneffekte über die Web Audio API.
 
+Wer die hübsche Rückseite möchte muss den Link zum Medienfile im Kurs ergänzen. Wer den nicht austauscht hat eine schwarze Rückseite.
+
 ---
 
 ## 🛠️ Technische Kontaktdaten (Support & Feedback)
