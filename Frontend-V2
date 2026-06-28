@@ -1,0 +1,851 @@
+<div id="tabu-master-robust"
+    style="background: #0d1513; color: #e8d5b5; padding: 20px; border-radius: 15px; border: 3px solid #d4af37; font-family: 'Georgia', serif; min-height: 700px; box-shadow: 0 0 40px rgba(0,0,0,0.8); overflow: hidden; position: relative; display: flow-root; clear: both;">
+
+    <script>
+        // Um den Moodle-Filter zu umgehen, splitten wir das "https://" vom Rest der URL ab:
+        const CARD_BACK_IMG_PORTRAIT = "https" + "://" + "Hier kann der Link zum Hochformat Bild eingefügt werden";
+        const CARD_BACK_IMG_LANDSCAPE = "https" + "://" + "Hier kann der Link zum Querformat Bild eingefügt werden";
+    </script>
+
+    <div id="setup-screen" style="display: block;">
+        <h1
+            style="color: #d4af37; text-align: center; text-transform: uppercase; letter-spacing: 5px; text-shadow: 0 0 10px #d4af37; margin-bottom: 20px;">
+            🚫 VETO 🚫</h1>
+
+        <div
+            style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; background: rgba(20, 35, 32, 0.9); padding: 20px; border-radius: 10px; border: 1px solid #d4af37;">
+
+            <div>
+                <h4 style="color: #d4af37; border-bottom: 1px solid #d4af37; padding-bottom: 5px;">👥 Gefährten (Teams)
+                </h4>
+                <div id="team-inputs-area">
+                    <input type="text" class="team-name-field" value="Fenster-Reihe"
+                        style="width: 100%; background: #000; color: #fff; border: 1px solid #d4af37; padding: 10px; margin-bottom: 8px; border-radius: 4px; box-sizing: border-box;">
+                    <input type="text" class="team-name-field" value="Tür-Reihe"
+                        style="width: 100%; background: #000; color: #fff; border: 1px solid #d4af37; padding: 10px; margin-bottom: 8px; border-radius: 4px; box-sizing: border-box;">
+                </div>
+                <button id="btn-add-team"
+                    style="background: transparent; color: #d4af37; border: 1px solid #d4af37; cursor: pointer; padding: 5px 15px; border-radius: 4px; font-weight: bold;">+
+                    Team</button>
+
+                <h4 style="color: #d4af37; border-bottom: 1px solid #d4af37; padding-bottom: 5px; margin-top: 20px;">⏱️
+                    Rundenzeit (Sek)</h4>
+                <input type="number" id="round-timer-input" value="60" min="10" max="300"
+                    style="width: 100%; background: #000; color: #fff; border: 1px solid #d4af37; padding: 10px; margin-bottom: 8px; border-radius: 4px; box-sizing: border-box;">
+            </div>
+
+            <div>
+                <h4 style="color: #d4af37; border-bottom: 1px solid #d4af37; padding-bottom: 5px;">🤖 KI-Import</h4>
+                <div
+                    style="background: #1a2e2a; padding: 10px; font-size: 0.85rem; border-left: 4px solid #d4af37; margin-bottom: 10px; color: #fff;">
+                    <span id="ai-prompt-text">Erstelle 10 Veto-Karten für das Thema [THEMA]. WICHTIG: Erstelle KEINE
+                        Tabelle, antworte in reinem Text! Trenne Spalten exakt mit einem Pipe-Symbol '|'. Format pro
+                        Zeile: Begriff | Tabu1, Tabu2, Tabu3, Tabu4, Tabu5. </span>
+                    <button id="btn-copy-prompt"
+                        style="display: block; margin-top: 8px; font-size: 0.75rem; background: #d4af37; border: none; font-weight: bold; padding: 5px 10px; cursor: pointer; border-radius: 3px; color: #000;">📋
+                        Prompt kopieren</button>
+                </div>
+                <textarea id="ai-import-area" placeholder="Format: Begriff | Tabu1, Tabu2, Tabu3"
+                    style="width: 100%; height: 100px; background: #000; color: #fff; border: 1px solid #d4af37; border-radius: 4px; padding: 8px; box-sizing: border-box;"></textarea>
+                <div style="display: flex; gap: 10px;">
+                    <button id="btn-import-run"
+                        style="flex: 2; background: #d4af37; color: #000; font-weight: bold; border: none; padding: 12px; margin-top: 10px; cursor: pointer; border-radius: 4px; text-transform: uppercase;">🚀
+                        Karten brennen</button>
+                    <button id="btn-clear-cache"
+                        style="flex: 1; background: #e21b3c; color: #fff; font-weight: bold; border: none; padding: 12px; margin-top: 10px; cursor: pointer; border-radius: 4px; text-transform: uppercase; display: none;">🗑️
+                        Leeren</button>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 15px; margin-top: 25px;">
+            <button id="btn-open-beamer"
+                style="flex: 1; padding: 20px; background: #1a2e2a; border: 2px solid #00ffcc; color: #00ffcc; font-size: 1.2rem; font-weight: bold; cursor: pointer; border-radius: 10px; transition: all 0.3s; box-shadow: 0 0 15px rgba(0, 255, 204, 0.2);">🖥️
+                BEAMER ÖFFNEN</button>
+            <button id="btn-game-start"
+                style="flex: 2; padding: 20px; background: transparent; border: 3px solid #d4af37; color: #d4af37; font-size: 1.6rem; font-weight: bold; letter-spacing: 5px; cursor: pointer; border-radius: 10px; transition: all 0.3s;">🃏
+                SPIEL BEGINNEN</button>
+        </div>
+        <p style="text-align: center; color: #888; font-size: 0.8rem; margin-top: 10px;">Tipp: Erlaube Popups in deinem
+            Browser, damit das Beamer-Fenster geöffnet werden kann.</p>
+    </div>
+
+    <div id="game-screen" style="display: none;">
+
+        <div
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; background: rgba(212, 175, 55, 0.05); padding: 15px; border-radius: 50px; border: 1px solid rgba(212, 175, 55, 0.3);">
+            <div id="active-team-display"
+                style="border: 2px solid #d4af37; padding: 10px 30px; border-radius: 50px; font-size: 1.4rem; font-weight: bold; background: #1a2e2a; color: #fff;">
+                ---</div>
+            <div id="game-timer"
+                style="font-size: 4.5rem; font-weight: bold; color: #d4af37; text-shadow: 0 0 20px rgba(212, 175, 55, 0.6); font-family: monospace;">
+                01:00</div>
+            <button id="btn-timer-trigger"
+                style="background: #d4af37; color: #000; font-weight: bold; border: none; padding: 15px 30px; border-radius: 50px; cursor: pointer; font-size: 1.1rem;">⏳
+                RUNDE STARTEN</button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 260px 1fr 260px; gap: 20px;">
+
+            <div>
+                <div id="score-board-area"
+                    style="background: rgba(20, 35, 32, 0.9); border: 2px solid #d4af37; padding: 20px; border-radius: 15px; height: fit-content;">
+                    <h5 style="color: #d4af37; border-bottom: 1px solid #d4af37; padding-bottom: 8px; margin-top: 0;">📜
+                        Spielstand</h5>
+                </div>
+                <button id="btn-open-beamer-game"
+                    style="width: 100%; margin-top: 15px; padding: 12px; background: #1a2e2a; border: 2px solid #00ffcc; color: #00ffcc; font-size: 1rem; font-weight: bold; cursor: pointer; border-radius: 10px; transition: all 0.3s; box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);">🖥️
+                    BEAMER</button>
+            </div>
+
+            <div style="text-align: center; position: relative;" id="center-stage">
+
+                <div id="deck-hint"
+                    style="color: #d4af37; margin-bottom: 15px; font-style: italic; letter-spacing: 2px;">Klicke auf das
+                    Deck, um eine Karte zu ziehen</div>
+                <div id="cards-left" style="color: #888; font-size: 0.9rem; margin-bottom: 15px; font-weight: bold;">
+                    Karten übrig: --</div>
+
+                <div id="card-stage"
+                    style="width: 340px; height: 480px; margin: 0 auto; perspective: 1200px; cursor: pointer;">
+                    <div id="card-flipper"
+                        style="position: relative; width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1); transform-style: preserve-3d;">
+
+                        <div id="card-back-face"
+                            style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 15px; border: 4px solid #d4af37; background-color: #1a2e2a; background-size: cover; background-position: center; box-shadow: 5px 5px 15px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;">
+                            <span id="fallback-text"
+                                style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #e8d5b5; font-size: 1.5rem; text-align: center; padding: 10px; background: rgba(0,0,0,0.5); border-radius: 5px; width: 80%; box-sizing: border-box; font-weight: bold; letter-spacing: 2px; text-transform: uppercase;">Erklär
+                                es anders</span>
+                        </div>
+
+                        <div id="card-front-face"
+                            style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 15px; border: 4px solid #1a2e2a; transform: rotateY(180deg); background: linear-gradient(135deg, #e8d5b5 0%, #d4b886 100%); color: #2e1a1a; display: flex; flex-direction: column; align-items: center; padding: 15px; box-sizing: border-box; box-shadow: inset 0 0 0 6px #e8d5b5, inset 0 0 0 8px #1a2e2a;">
+
+                            <div
+                                style="flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; border-bottom: 2px solid #1a2e2a; padding-bottom: 10px; margin-bottom: 10px;">
+                                <h2 id="display-term"
+                                    style="font-size: 1.2rem; text-transform: uppercase; font-weight: 900; margin: 0; text-align: center; width: 100%; word-break: break-word; overflow-wrap: break-word; hyphens: auto; line-height: 1.2;">
+                                    BEGRIFF</h2>
+                            </div>
+
+                            <div
+                                style="width: 100%; flex: 1.5; display: flex; flex-direction: column; justify-content: flex-start;">
+                                <div
+                                    style="font-size: 0.6rem; text-align: center; font-weight: bold; margin-bottom: 5px; color: #4a3b2c;">
+                                    VERBOTENE WÖRTER:</div>
+                                <ul id="display-blacklist"
+                                    style="list-style: none; padding: 0; margin: 0; width: 100%;"></ul>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div id="action-buttons"
+                    style="margin-top: 25px; display: flex; justify-content: center; gap: 10px; opacity: 0; pointer-events: none; transition: opacity 0.3s;">
+                    <button id="btn-err"
+                        style="background: #e21b3c; color: #fff; border: 2px solid #5a0b18; padding: 15px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #5a0b18;">💀
+                        Fehler (-1)</button>
+                    <button id="btn-skip"
+                        style="background: #4a5568; color: #fff; border: 2px solid #2d3748; padding: 15px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #2d3748;">⏩
+                        Weiter (0)</button>
+                    <button id="btn-ok"
+                        style="background: #2f855a; color: #fff; border: 2px solid #1c4532; padding: 15px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #1c4532;">✨
+                        Richtig (+1)</button>
+                </div>
+            </div>
+
+            <div id="success-stack-area"
+                style="background: rgba(20, 35, 32, 0.9); border: 2px solid #d4af37; padding: 20px; border-radius: 15px; position: relative; height: 350px; overflow: hidden;">
+                <h5
+                    style="color: #d4af37; border-bottom: 1px solid #d4af37; padding-bottom: 8px; margin-top: 0; text-align: center;">
+                    🏆 Ablagestapel</h5>
+                <div style="text-align: center; color: #fff; font-size: 0.9rem; margin-bottom: 15px;">Erraten: <span
+                        id="correct-count" style="font-weight: bold; color: #d4af37; font-size: 1.2rem;">0</span></div>
+
+                <div id="stack-container"
+                    style="position: relative; width: 130px; height: 195px; margin: 10px auto 0 auto;">
+                    <div
+                        style="position: absolute; width: 100%; height: 100%; border: 2px dashed rgba(212, 175, 55, 0.3); border-radius: 10px;">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+<script>
+    (function () {
+        function initTabuGame() {
+            const btnAddTeamCheck = document.getElementById('btn-add-team');
+            if (!btnAddTeamCheck) { setTimeout(initTabuGame, 200); return; }
+
+            let allCards = [];
+            let gameCards = [];
+            let teams = [];
+            let currentTeamIndex = 0;
+            let roundScore = 0;
+            let timerObj = null;
+            let isCardFlipped = false;
+            let isAnimating = false;
+            let currentCardText = ""; // Speichert das aktive Wort für den Beamer
+            let roundTimeSetting = 60; // Speichert die eingestellte Rundenzeit
+
+            // Synthesizer für native Toneffekte
+            let audioCtx = null;
+
+            function playTickSound() {
+                try {
+                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                    if (!AudioContextClass) return;
+                    if (!audioCtx) audioCtx = new AudioContextClass();
+                    if (audioCtx.state === 'suspended') audioCtx.resume();
+                    let osc = audioCtx.createOscillator();
+                    let gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.1);
+                } catch (e) { }
+            }
+
+            function playBuzzerSound() {
+                try {
+                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                    if (!AudioContextClass) return;
+                    if (!audioCtx) audioCtx = new AudioContextClass();
+                    if (audioCtx.state === 'suspended') audioCtx.resume();
+                    let osc = audioCtx.createOscillator();
+                    let gain = audioCtx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.0);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 1.0);
+                } catch (e) { }
+            }
+
+            // Definition des Fallback-Musters als Einzeiler (robuster für Inline-Styles im Beamer)
+            const CSS_CARD_PATTERN = 'repeating-linear-gradient(45deg, #1a2e2a, #1a2e2a 10px, #0d1513 10px, #0d1513 20px)';
+
+            const svgContent = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#2d4a43" />
+      <stop offset="100%" stop-color="#142622" />
+    </radialGradient>
+    
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e2c074" />
+      <stop offset="50%" stop-color="#b08d40" />
+      <stop offset="100%" stop-color="#7a5c1a" />
+    </linearGradient>
+    
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity="0.6"/>
+    </filter>
+
+    <pattern id="astroPattern" width="100" height="100" patternUnits="userSpaceOnUse">
+      <g fill="url(#goldGrad)" opacity="0.35">
+        <path d="M30,20 C22,20 15,27 15,35 C15,43 22,50 30,50 C25,46 22,41 22,35 C22,29 25,24 30,20 Z" />
+        <path d="M75,25 Q75,35 85,35 Q75,35 75,45 Q75,35 65,35 Q75,35 75,25 Z" />
+        <path d="M35,75 Q35,80 40,80 Q35,80 35,85 Q35,80 30,80 Q35,80 35,75 Z" />
+        <circle cx="75" cy="75" r="2" />
+      </g>
+    </pattern>
+  </defs>
+
+  <rect width="640" height="400" rx="24" fill="url(#bgGrad)" stroke="url(#goldGrad)" stroke-width="8" />
+  
+  <rect width="640" height="400" rx="24" fill="url(#astroPattern)" />
+
+  <g fill="url(#goldGrad)" filter="url(#shadow)" opacity="0.85">
+    <path d="M 100,70 C 85,70 72,83 72,100 C 72,117 85,130 100,130 C 92,123 87,112 87,100 C 87,88 92,77 100,70 Z" transform="scale(0.7) translate(40, 20)" />
+    <path d="M 100,70 C 85,70 72,83 72,100 C 72,117 85,130 100,130 C 92,123 87,112 87,100 C 87,88 92,77 100,70 Z" transform="scale(0.7) translate(760, 420) rotate(180)" />
+    
+    <path d="M 160,140 Q 160,150 170,150 Q 160,150 160,160 Q 160,150 150,150 Q 160,150 160,140 Z" />
+    <path d="M 480,240 Q 480,250 490,250 Q 480,250 480,260 Q 480,250 470,250 Q 480,250 480,240 Z" />
+    <path d="M 320,65 Q 320,72 327,72 Q 320,72 320,79 Q 320,72 313,72 Q 320,72 320,65 Z" />
+  </g>
+
+  <rect x="20" y="20" width="600" height="360" rx="16" fill="none" stroke="url(#goldGrad)" stroke-width="3" stroke-dasharray="10, 5" opacity="0.7" />
+  <rect x="28" y="28" width="584" height="344" rx="12" fill="none" stroke="url(#goldGrad)" stroke-width="2" />
+
+  <g fill="url(#goldGrad)">
+    <path d="M 35 35 L 60 35 C 60 45, 45 60, 35 60 Z" opacity="0.8"/>
+    <path d="M 605 35 L 580 35 C 580 45, 595 60, 605 60 Z" opacity="0.8"/>
+    <path d="M 35 365 L 60 365 C 60 355, 45 340, 35 340 Z" opacity="0.8"/>
+    <path d="M 605 365 L 580 365 C 580 355, 595 340, 605 340 Z" opacity="0.8"/>
+  </g>
+
+  <circle cx="320" cy="200" r="110" fill="#22160d" stroke="url(#goldGrad)" stroke-width="6" filter="url(#shadow)" />
+  <circle cx="320" cy="200" r="102" fill="none" stroke="url(#goldGrad)" stroke-width="2" stroke-dasharray="6, 4" opacity="0.6" />
+
+  <circle cx="160" cy="200" r="25" fill="#22160d" stroke="url(#goldGrad)" stroke-width="3" />
+  <circle cx="480" cy="200" r="25" fill="#22160d" stroke="url(#goldGrad)" stroke-width="3" />
+
+  <g id="textGroup" fill="url(#goldGrad)" filter="url(#shadow)" font-family="'Impact', 'Arial Black', sans-serif" text-anchor="middle" font-weight="bold" letter-spacing="1">
+    <text x="320" y="190" font-size="34">ERKLÄR ES</text>
+    <text x="320" y="235" font-size="34">ANDERS ...</text>
+  </g>
+</svg>
+`;
+
+            const svgContentPortrait = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 640" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bgGradPort" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#2d4a43" />
+      <stop offset="100%" stop-color="#142622" />
+    </radialGradient>
+    
+    <linearGradient id="goldGradPort" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e2c074" />
+      <stop offset="50%" stop-color="#b08d40" />
+      <stop offset="100%" stop-color="#7a5c1a" />
+    </linearGradient>
+    
+    <filter id="shadowPort" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity="0.6"/>
+    </filter>
+
+    <pattern id="astroPatternPort" width="100" height="100" patternUnits="userSpaceOnUse">
+      <g fill="url(#goldGradPort)" opacity="0.35">
+        <path d="M30,20 C22,20 15,27 15,35 C15,43 22,50 30,50 C25,46 22,41 22,35 C22,29 25,24 30,20 Z" />
+        <path d="M75,25 Q75,35 85,35 Q75,35 75,45 Q75,35 65,35 Q75,35 75,25 Z" />
+        <path d="M35,75 Q35,80 40,80 Q35,80 35,85 Q35,80 30,80 Q35,80 35,75 Z" />
+        <circle cx="75" cy="75" r="2" />
+      </g>
+    </pattern>
+  </defs>
+
+  <rect width="400" height="640" rx="24" fill="url(#bgGradPort)" stroke="url(#goldGradPort)" stroke-width="8" />
+  <rect width="400" height="640" rx="24" fill="url(#astroPatternPort)" />
+
+  <g fill="url(#goldGradPort)" filter="url(#shadowPort)" opacity="0.85">
+    <path d="M 100,70 C 85,70 72,83 72,100 C 72,117 85,130 100,130 C 92,123 87,112 87,100 C 87,88 92,77 100,70 Z" transform="scale(0.7) translate(40, 20)" />
+    <path d="M 100,70 C 85,70 72,83 72,100 C 72,117 85,130 100,130 C 92,123 87,112 87,100 C 87,88 92,77 100,70 Z" transform="scale(0.7) translate(410, 750) rotate(180)" />
+    
+    <path d="M 80,140 Q 80,150 90,150 Q 80,150 80,160 Q 80,150 70,150 Q 80,150 80,140 Z" />
+    <path d="M 320,480 Q 320,490 330,490 Q 320,490 320,500 Q 320,490 310,490 Q 320,490 320,480 Z" />
+    <path d="M 200,65 Q 200,72 207,72 Q 200,72 200,79 Q 200,72 193,72 Q 200,72 200,65 Z" />
+  </g>
+
+  <rect x="20" y="20" width="360" height="600" rx="16" fill="none" stroke="url(#goldGradPort)" stroke-width="3" stroke-dasharray="10, 5" opacity="0.7" />
+  <rect x="28" y="28" width="344" height="584" rx="12" fill="none" stroke="url(#goldGradPort)" stroke-width="2" />
+
+  <g fill="url(#goldGradPort)">
+    <path d="M 35 35 L 60 35 C 60 45, 45 60, 35 60 Z" opacity="0.8"/>
+    <path d="M 365 35 L 340 35 C 340 45, 355 60, 365 60 Z" opacity="0.8"/>
+    <path d="M 35 605 L 60 605 C 60 595, 45 580, 35 580 Z" opacity="0.8"/>
+    <path d="M 365 605 L 340 605 C 340 595, 355 580, 365 580 Z" opacity="0.8"/>
+  </g>
+
+  <circle cx="200" cy="320" r="110" fill="#22160d" stroke="url(#goldGradPort)" stroke-width="6" filter="url(#shadowPort)" />
+  <circle cx="200" cy="320" r="102" fill="none" stroke="url(#goldGradPort)" stroke-width="2" stroke-dasharray="6, 4" opacity="0.6" />
+
+  <circle cx="200" cy="160" r="25" fill="#22160d" stroke="url(#goldGradPort)" stroke-width="3" />
+  <circle cx="200" cy="480" r="25" fill="#22160d" stroke="url(#goldGradPort)" stroke-width="3" />
+
+  <g id="textGroupPort" fill="url(#goldGradPort)" filter="url(#shadowPort)" font-family="'Impact', 'Arial Black', sans-serif" text-anchor="middle" font-weight="bold" letter-spacing="1">
+    <text x="200" y="310" font-size="34">ERKLÄR ES</text>
+    <text x="200" y="355" font-size="34">ANDERS ...</text>
+  </g>
+</svg>
+`;
+
+            let beamerWindow = null;
+
+            const ui = {
+                setup: document.getElementById('setup-screen'),
+                game: document.getElementById('game-screen'),
+                flipper: document.getElementById('card-flipper'),
+                stage: document.getElementById('card-stage'),
+                timer: document.getElementById('game-timer'),
+                term: document.getElementById('display-term'),
+                list: document.getElementById('display-blacklist'),
+                score: document.getElementById('score-board-area'),
+                activeTeam: document.getElementById('active-team-display'),
+                actions: document.getElementById('action-buttons'),
+                hint: document.getElementById('deck-hint'),
+                backFace: document.getElementById('card-back-face'),
+                correctCount: document.getElementById('correct-count'),
+                fallbackText: document.getElementById('fallback-text'),
+                stackContainer: document.getElementById('stack-container'),
+                cardsLeft: document.getElementById('cards-left'),
+                timerInput: document.getElementById('round-timer-input')
+            };
+
+            // Lade das primäre Bild für die Kartenrückseite (Hochformat)
+            let isPortraitFallback = true;
+            const cardBackImagePortrait = new Image();
+            if (CARD_BACK_IMG_PORTRAIT && CARD_BACK_IMG_PORTRAIT.trim() !== "") {
+                cardBackImagePortrait.src = CARD_BACK_IMG_PORTRAIT;
+                cardBackImagePortrait.onload = () => {
+                    ui.backFace.style.backgroundImage = `url('${CARD_BACK_IMG_PORTRAIT}')`;
+                    ui.backFace.style.border = '4px solid #d4af37';
+                    ui.backFace.style.backgroundColor = '#1a2e2a';
+                    ui.backFace.innerHTML = '';
+                    isPortraitFallback = false;
+                };
+                cardBackImagePortrait.onerror = () => {
+                    ui.backFace.style.backgroundImage = 'none';
+                    ui.backFace.style.border = 'none';
+                    ui.backFace.style.backgroundColor = 'transparent';
+                    ui.backFace.innerHTML = svgContentPortrait;
+                    isPortraitFallback = true;
+                };
+            } else {
+                ui.backFace.style.backgroundImage = 'none';
+                ui.backFace.style.border = 'none';
+                ui.backFace.style.backgroundColor = 'transparent';
+                ui.backFace.innerHTML = svgContentPortrait;
+                isPortraitFallback = true;
+            }
+
+            // Lade das Querformat-Bild für den Beamer
+            let isLandscapeFallback = true;
+            const cardBackImageLandscape = new Image();
+            if (CARD_BACK_IMG_LANDSCAPE && CARD_BACK_IMG_LANDSCAPE.trim() !== "") {
+                cardBackImageLandscape.src = CARD_BACK_IMG_LANDSCAPE;
+                cardBackImageLandscape.onload = () => {
+                    isLandscapeFallback = false;
+                    try {
+                        if (beamerWindow && !beamerWindow.closed) {
+                            const bCardBack = beamerWindow.document.getElementById('b-card-back');
+                            if (bCardBack) {
+                                bCardBack.style.backgroundImage = `url('${CARD_BACK_IMG_LANDSCAPE}')`;
+                                bCardBack.style.border = '8px solid #d4af37';
+                                bCardBack.style.backgroundColor = '#1a2e2a';
+                                bCardBack.innerHTML = '';
+                            }
+                        }
+                    } catch (e) { }
+                };
+                cardBackImageLandscape.onerror = () => {
+                    isLandscapeFallback = true;
+                    try {
+                        if (beamerWindow && !beamerWindow.closed) {
+                            const bCardBack = beamerWindow.document.getElementById('b-card-back');
+                            if (bCardBack) {
+                                bCardBack.style.backgroundImage = 'none';
+                                bCardBack.style.border = 'none';
+                                bCardBack.style.backgroundColor = 'transparent';
+                                bCardBack.innerHTML = svgContent;
+                            }
+                        }
+                    } catch (e) { }
+                };
+            } else {
+                isLandscapeFallback = true;
+            }
+
+            if (!CARD_BACK_IMG_PORTRAIT || CARD_BACK_IMG_PORTRAIT.trim() === "") {
+                ui.backFace.style.backgroundImage = 'none';
+                ui.backFace.style.border = 'none';
+                ui.backFace.style.backgroundColor = 'transparent';
+                ui.backFace.innerHTML = svgContentPortrait;
+            }
+
+            // === BEAMER LOGIK ===
+            function openBeamerWindow() {
+                beamerWindow = window.open('', 'TabuBeamer', 'width=1024,height=768');
+                if (!beamerWindow) {
+                    alert("Dein Browser hat das Fenster blockiert! Bitte erlaube Popups für diese Seite.");
+                    return;
+                }
+
+                let rTime = parseInt(ui.timerInput.value) || 60;
+                let bm = Math.floor(rTime / 60);
+                let bs = rTime % 60;
+                let bTimeStr = bm + ":" + (10 > bs ? '0' : '') + bs;
+
+                let beamerBg = isLandscapeFallback ? 'none' : `url('${CARD_BACK_IMG_LANDSCAPE}')`;
+                let beamerBorder = isLandscapeFallback ? 'none' : '8px solid #d4af37';
+                let beamerBgColor = isLandscapeFallback ? 'transparent' : '#1a2e2a';
+                let beamerInner = isLandscapeFallback ? svgContent : '';
+
+                beamerWindow.document.write(` 
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>VETO - Klasse</title>
+                    <base href="${window.location.href}">
+                </head>
+                <body style="background: #090e0c; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; font-family: 'Georgia', serif;">
+                    
+                    <div style="display: flex; justify-content: space-between; padding: 40px; font-size: 4rem; font-weight: bold; color: #d4af37; text-shadow: 0 0 30px rgba(212, 175, 55, 0.8);">
+                        <div id="b-team">Vorbereitung...</div>
+                        <div id="b-timer" style="font-family: monospace; transition: color 0.3s;">${bTimeStr}</div>
+                    </div>
+                    
+                    <div id="b-scores-content" style="display: flex; gap: 15px; justify-content: center; padding: 0 40px 20px 40px; flex-wrap: wrap;"></div>
+                    
+                    <div style="flex: 1; display: flex; justify-content: center; align-items: center; perspective: 1500px;">
+                        <div id="b-card" style="width: 640px; height: 400px; position: relative; transition: transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1); transform-style: preserve-3d;">
+                            
+                            <div id="b-card-back" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 25px; border: ${beamerBorder}; background-color: ${beamerBgColor}; background-image: ${beamerBg}; background-size: cover; background-position: center; box-shadow: 0 0 60px rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center;">
+                                ${beamerInner}
+                            </div>
+                            
+                            <div id="b-card-front" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 25px; border: 8px solid #d4af37; transform: rotateY(180deg); background: radial-gradient(circle at center, #d4b886 0%, #1a2e2a 100%); display: flex; align-items: center; justify-content: center; text-align: center; padding: 30px; box-sizing: border-box; transition: box-shadow 1s;">
+                                <h1 id="b-term" style="font-size: 3.5rem; text-transform: uppercase; color: #fff; text-shadow: 0 0 20px #d4af37, 2px 2px 4px #000; width: 100%; word-break: break-word; overflow-wrap: break-word; hyphens: auto; line-height: 1.2; margin: 0;">???</h1>
+                            </div>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `);
+                beamerWindow.document.close();
+
+                [document.getElementById('btn-open-beamer'), document.getElementById('btn-open-beamer-game')].forEach(btn => {
+                    if (btn) {
+                        btn.innerText = "✅ BEAMER AKTIV";
+                        btn.style.borderColor = "#2f855a";
+                        btn.style.color = "#2f855a";
+                        btn.style.boxShadow = "none";
+                    }
+                });
+
+                if (teams && teams.length > 0) {
+                    updateScores();
+                    const activeTeamText = document.getElementById('active-team-display').innerText;
+                    if (activeTeamText !== "---") beamerUpdate('team', activeTeamText);
+                    else beamerUpdate('team', "📍 " + teams[0].name);
+
+                    beamerUpdate('timer', document.getElementById('game-timer').innerText);
+                    beamerUpdate('timerColor', document.getElementById('game-timer').style.color || "#d4af37");
+
+                    if (isCardFlipped) {
+                        beamerUpdate('solve', currentCardText);
+                    } else {
+                        beamerUpdate('reset');
+                    }
+                }
+            }
+
+            document.getElementById('btn-open-beamer').addEventListener('click', openBeamerWindow);
+            document.getElementById('btn-open-beamer-game').addEventListener('click', openBeamerWindow);
+
+            function beamerUpdate(action, payload) {
+                try {
+                    if (!beamerWindow || beamerWindow.closed) return;
+                    const doc = beamerWindow.document;
+                    if (action === 'timer') doc.getElementById('b-timer').innerText = payload;
+                    if (action === 'timerColor') doc.getElementById('b-timer').style.color = payload;
+                    if (action === 'team') doc.getElementById('b-team').innerText = payload;
+                    if (action === 'reset') { doc.getElementById('b-card').style.transform = 'rotateY(0deg) scale(1)'; doc.getElementById('b-card-front').style.boxShadow = 'none'; }
+                    if (action === 'solve') { doc.getElementById('b-term').innerText = payload; doc.getElementById('b-card').style.transform = 'rotateY(180deg) scale(1.15)'; doc.getElementById('b-card-front').style.boxShadow = '0 0 100px rgba(212, 175, 55, 0.9), inset 0 0 50px rgba(212, 175, 55, 0.5)'; }
+                } catch (e) { }
+            }
+
+            document.getElementById('btn-add-team').addEventListener('click', function () {
+                const input = document.createElement('input');
+                input.type = "text";
+                input.className = "team-name-field";
+                input.value = "Team " + (document.querySelectorAll('.team-name-field').length + 1);
+                input.style = "width: 100%; background: #000; color: #fff; border: 1px solid #d4af37; padding: 10px; margin-bottom: 8px; border-radius: 4px; box-sizing: border-box;";
+                document.getElementById('team-inputs-area').appendChild(input);
+            });
+
+            document.getElementById('btn-copy-prompt').addEventListener('click', function () {
+                const text = document.getElementById('ai-prompt-text').innerText;
+                const el = document.createElement('textarea');
+                el.value = text;
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand('copy');
+                document.body.removeChild(el);
+                this.innerText = "✅ Kopiert!";
+                setTimeout(() => { this.innerText = "📋 Prompt kopieren"; }, 2000);
+            });
+
+            // NEU: Local Storage Cache für Karten
+            let savedCards = localStorage.getItem('bycs_tabu_cards');
+            if (savedCards) {
+                try {
+                    allCards = JSON.parse(savedCards);
+                    if (allCards.length > 0) {
+                        const ia = document.getElementById('ai-import-area');
+                        if (ia) ia.value = "✅ " + allCards.length + " Karten aus dem Speicher geladen!\n\nDu kannst direkt starten oder unten neue einfügen und dazubrennen.";
+                        const bc = document.getElementById('btn-clear-cache');
+                        if (bc) bc.style.display = 'block';
+                    }
+                } catch (e) { }
+            }
+
+            document.getElementById('btn-import-run').addEventListener('click', function () {
+                const raw = document.getElementById('ai-import-area').value;
+                if (raw.includes('✅')) {
+                    alert('Die Karten sind bereits geladen! Du kannst das Spiel starten.');
+                    return;
+                }
+                let added = 0;
+                raw.split('\n').forEach(l => {
+                    const p = l.split('|');
+                    if (p.length >= 2 && p[1].trim() !== "") {
+                        allCards.push({ text: p[0].trim(), tabu: p[1].split(','), bg: p[2] ? p[2].trim() : "" });
+                        added++;
+                    }
+                });
+                if (added > 0) {
+                    localStorage.setItem('bycs_tabu_cards', JSON.stringify(allCards));
+                    document.getElementById('btn-clear-cache').style.display = 'block';
+                    alert(added + " neue Karten erfolgreich gebrannt! (Gesamt: " + allCards.length + ")");
+                    document.getElementById('ai-import-area').value = "✅ " + allCards.length + " Karten aus dem Speicher geladen!\n\nDu kannst direkt starten oder unten neue einfügen und dazubrennen.";
+                } else {
+                    alert("Keine gültigen Karten gefunden. Bitte Format prüfen!");
+                }
+            });
+
+            document.getElementById('btn-clear-cache').addEventListener('click', function () {
+                if (confirm("Wirklich alle " + allCards.length + " gespeicherten Karten endgültig löschen?")) {
+                    localStorage.removeItem('bycs_tabu_cards');
+                    allCards = [];
+                    document.getElementById('ai-import-area').value = '';
+                    this.style.display = 'none';
+                    alert("Stapel geleert!");
+                }
+            });
+
+            document.getElementById('btn-game-start').addEventListener('click', function () {
+                const names = document.querySelectorAll('.team-name-field');
+                teams = Array.from(names).map(n => ({ name: n.value, score: 0 }));
+                if (allCards.length === 0) return alert("Bitte erst Karten importieren!");
+
+                roundTimeSetting = parseInt(ui.timerInput.value) || 60;
+                let m = Math.floor(roundTimeSetting / 60);
+                let s = roundTimeSetting % 60;
+                ui.timer.innerText = m + ":" + (10 > s ? '0' : '') + s;
+
+                ui.setup.style.display = 'none';
+                ui.game.style.display = 'block';
+                gameCards = [...allCards].sort(() => 0.5 - Math.random());
+                ui.cardsLeft.innerText = "Karten übrig: " + gameCards.length;
+                updateScores();
+                resetDeckForNextDraw();
+
+                beamerUpdate('team', "📍 " + teams[0].name);
+            });
+
+            document.getElementById('btn-timer-trigger').addEventListener('click', function () {
+                try {
+                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContextClass) {
+                        if (!audioCtx) audioCtx = new AudioContextClass();
+                        if (audioCtx.state === 'suspended') audioCtx.resume();
+                    }
+                } catch (e) { console.warn("AudioContext Fehler:", e); }
+
+                let timeLeft = roundTimeSetting;
+                this.disabled = true;
+                roundScore = 0;
+                ui.correctCount.innerText = "0";
+                ui.stackContainer.innerHTML = '';
+
+                const teamStr = "📍 " + teams[currentTeamIndex].name;
+                ui.activeTeam.innerText = teamStr;
+                beamerUpdate('team', teamStr);
+                beamerUpdate('reset');
+
+                timerObj = setInterval(() => {
+                    timeLeft--;
+                    let m = Math.floor(timeLeft / 60);
+                    let s = timeLeft % 60;
+                    let timeStr = m + ":" + (10 > s ? '0' : '') + s;
+
+                    ui.timer.innerText = timeStr;
+                    beamerUpdate('timer', timeStr);
+
+                    if (timeLeft <= 10 && timeLeft > 0) {
+                        ui.timer.style.color = "#e21b3c"; // Rot
+                        beamerUpdate('timerColor', '#e21b3c');
+                        playTickSound();
+                    } else if (timeLeft > 10) {
+                        ui.timer.style.color = "#d4af37"; // Normal
+                        beamerUpdate('timerColor', '#d4af37');
+                    }
+
+                    if (0 >= timeLeft) {
+                        clearInterval(timerObj);
+                        this.disabled = false;
+
+                        ui.timer.style.color = "#e21b3c";
+                        beamerUpdate('timerColor', '#e21b3c');
+                        playBuzzerSound();
+
+                        setTimeout(() => {
+                            alert("Zeit abgelaufen! Punkte in dieser Runde: " + roundScore);
+                            teams[currentTeamIndex].score += roundScore;
+                            roundScore = 0; // Nach Rundenende temporären Wert nullen
+                            currentTeamIndex = (currentTeamIndex + 1) % teams.length;
+                            updateScores();
+                            resetDeckForNextDraw();
+                            beamerUpdate('team', "PAUSE");
+
+                            ui.timer.style.color = "#d4af37";
+                            beamerUpdate('timerColor', '#d4af37');
+                            let rm = Math.floor(roundTimeSetting / 60);
+                            let rs = roundTimeSetting % 60;
+                            let rTimeStr = rm + ":" + (10 > rs ? '0' : '') + rs;
+                            ui.timer.innerText = rTimeStr;
+                            beamerUpdate('timer', rTimeStr);
+                        }, 50);
+                    }
+                }, 1000);
+            });
+
+            ui.stage.addEventListener('click', function () {
+                if (isCardFlipped || isAnimating) return;
+
+                if (gameCards.length === 0) {
+                    alert("Der Kartenstapel ist leer! Es können keine weiteren Karten gezogen werden.");
+                    return;
+                }
+
+                // Automatisch den Timer starten, falls das noch nicht manuell passiert ist
+                const timerBtn = document.getElementById('btn-timer-trigger');
+                if (timerBtn && !timerBtn.disabled) {
+                    timerBtn.click();
+                }
+
+                const card = gameCards.pop();
+                ui.cardsLeft.innerText = "Karten übrig: " + gameCards.length;
+                currentCardText = card.text;
+
+                ui.term.innerText = currentCardText;
+
+                const lt = String.fromCharCode(60);
+                const gt = String.fromCharCode(62);
+                ui.list.innerHTML = card.tabu.map(t => lt + 'li style="background: rgba(26, 46, 42, 0.1); color: #1a2e2a; margin: 3px 0; padding: 5px; border-radius: 5px; font-size: 0.65rem; font-weight: bold; text-align: center; border: 1px solid #1a2e2a;"' + gt + t.trim().toUpperCase() + lt + '/li' + gt).join('');
+
+                ui.flipper.style.transform = "rotateY(180deg)";
+                isCardFlipped = true;
+
+                ui.actions.style.opacity = "1";
+                ui.actions.style.pointerEvents = "auto";
+                ui.hint.style.opacity = "0";
+
+                beamerUpdate('reset');
+            });
+
+            function resetDeckForNextDraw() {
+                ui.flipper.style.transform = "rotateY(0deg)";
+                ui.actions.style.opacity = "0";
+                ui.actions.style.pointerEvents = "none";
+                ui.hint.style.opacity = "1";
+                isCardFlipped = false;
+            }
+
+            document.getElementById('btn-err').addEventListener('click', function () { roundScore--; updateScores(); resetDeckForNextDraw(); });
+            document.getElementById('btn-skip').addEventListener('click', function () { resetDeckForNextDraw(); });
+
+            document.getElementById('btn-ok').addEventListener('click', function () {
+                if (isAnimating) return;
+                isAnimating = true;
+                roundScore++;
+                updateScores();
+                ui.correctCount.innerText = parseInt(ui.correctCount.innerText) + 1;
+
+                beamerUpdate('solve', currentCardText);
+
+                ui.actions.style.opacity = "0";
+                ui.actions.style.pointerEvents = "none";
+
+                let fallbackTimeout = setTimeout(() => { if (isAnimating) finalizeCorrectCard(); }, 600);
+
+                try {
+                    const flipperRect = ui.flipper.getBoundingClientRect();
+                    const stackRect = ui.stackContainer.getBoundingClientRect();
+
+                    const deltaX = stackRect.left - flipperRect.left;
+                    const deltaY = stackRect.top - flipperRect.top;
+
+                    const animation = ui.flipper.animate([
+                        { transform: 'rotateY(180deg) translate(0px, 0px) scale(1)' },
+                        { transform: `translate(${deltaX}px, ${deltaY}px) scale(0.5) rotateY(360deg) rotateZ(10deg)`, opacity: 0.5 }
+                    ], { duration: 500, easing: 'ease-in-out' });
+
+                    animation.onfinish = () => {
+                        clearTimeout(fallbackTimeout);
+                        if (isAnimating) finalizeCorrectCard();
+                    };
+                } catch (e) {
+                    clearTimeout(fallbackTimeout);
+                    if (isAnimating) finalizeCorrectCard();
+                }
+            });
+
+            function finalizeCorrectCard() {
+                const stackedCard = document.createElement('div');
+                const randomRot = Math.floor(Math.random() * 20) - 10;
+
+                let isFallback = isPortraitFallback;
+                let bgStyle = isFallback
+                    ? `background-color: transparent; border: none;`
+                    : `background-image: url('${CARD_BACK_IMG_PORTRAIT}'); border: 2px solid #d4af37; background-color: #1a2e2a;`;
+
+                stackedCard.style.cssText = `position: absolute; width: 100%; height: 100%; border-radius: 10px; ${bgStyle} background-size: cover; background-position: center; transform: rotate(${randomRot}deg); box-shadow: -2px 2px 5px rgba(0,0,0,0.5); box-sizing: border-box;`;
+
+                if (isFallback) {
+                    stackedCard.innerHTML = svgContentPortrait;
+                }
+                ui.stackContainer.appendChild(stackedCard);
+
+                ui.flipper.style.transform = "rotateY(0deg)";
+                isCardFlipped = false;
+                isAnimating = false;
+                ui.hint.style.opacity = "1";
+            }
+
+            function updateScores() {
+                const lt = String.fromCharCode(60);
+                const gt = String.fromCharCode(62);
+                ui.score.innerHTML = lt + 'h5 style="color: #d4af37; border-bottom: 1px solid #d4af37; padding-bottom: 8px; margin-top: 0;"' + gt + '📜 Spielstand' + lt + '/h5' + gt +
+                    teams.map((t, i) => {
+                        let roundScoreHtml = "";
+                        if (i === currentTeamIndex && roundScore !== 0) {
+                            let color = roundScore > 0 ? '#4ade80' : '#ff4d4f';
+                            let sign = roundScore > 0 ? '+' : '';
+                            roundScoreHtml = ' ' + lt + 'span style="font-size:0.8em; color:' + color + ';"' + gt + '(' + sign + roundScore + ')' + lt + '/span' + gt;
+                        }
+                        return lt + 'div style="padding: 10px; margin-bottom: 5px; border: 1px solid #d4af37; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; background: ' + (i === currentTeamIndex ? 'rgba(212, 175, 55, 0.2)' : 'transparent') + '"' + gt + lt + 'div style="word-break: break-word; line-height: 1.2; margin-right: 10px;"' + gt + t.name + lt + '/div' + gt + lt + 'div style="color:#d4af37; font-weight: bold; white-space: nowrap;"' + gt + t.score + roundScoreHtml + lt + '/div' + gt + lt + '/div' + gt;
+                    }).join('');
+
+                try {
+                    if (beamerWindow && !beamerWindow.closed) {
+                        const bScores = beamerWindow.document.getElementById('b-scores-content');
+                        if (bScores) {
+                            bScores.innerHTML = teams.map((t, i) => {
+                                let roundScoreHtml = "";
+                                if (i === currentTeamIndex && roundScore !== 0) {
+                                    let color = roundScore > 0 ? '#4ade80' : '#ff4d4f';
+                                    let sign = roundScore > 0 ? '+' : '';
+                                    roundScoreHtml = ' ' + lt + 'span style="font-size:0.7em; color:' + color + ';"' + gt + '(' + sign + roundScore + ')' + lt + '/span' + gt;
+                                }
+                                return lt + 'div style="padding: 10px 20px; border: 2px solid #d4af37; border-radius: 10px; background: ' + (i === currentTeamIndex ? 'rgba(212, 175, 55, 0.4)' : 'rgba(0,0,0,0.5)') + '; color: #fff; font-size: 1.8rem; min-width: 150px; text-align: center; box-shadow: ' + (i === currentTeamIndex ? '0 0 15px rgba(212,175,55,0.5)' : 'none') + ';"' + gt + t.name + ': ' + lt + 'span style="color:#d4af37; font-weight: bold;"' + gt + t.score + roundScoreHtml + lt + '/span' + gt + lt + '/div' + gt;
+                            }).join('');
+                        }
+                    }
+                } catch (e) { }
+            }
+        }
+
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", initTabuGame);
+        } else {
+            initTabuGame();
+        }
+
+    })();
+</script>
+</div>
