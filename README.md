@@ -63,3 +63,17 @@ Zelle | Biologie, Mikroskop, Kern, Pflanze, Leben
 Dieses Programm ist freie Software: Sie können es unter den Bedingungen der GNU General Public License, wie von der Free Software Foundation veröffentlicht, weitergeben und/oder modifizieren (entweder gemäß Version 3 der Lizenz oder jeder späteren Version).
 
 Die Verteilung erfolgt in der Hoffnung, dass das Programm nützlich sein wird, aber OHNE JEDE GEWÄHRLEISTUNG. Weitere Details entnehmen Sie bitte der im Repository hinterlegten LICENSE Datei oder dem offiziellen GNU-Portal unter https://www.gnu.org/licenses/.
+
+
+## 🛠️ Development & Security Statement
+
+Dieses Repository entstand im Rahmen eines modernen **AI-assisted Development Workflows** (Vibecoding). 
+
+> **Mensch & Maschine im Team:** Die KI liefert die Code-Struktur und die schnellen UI-Iterationen, die didaktische und technische Qualitätskontrolle liegt zu 100 % in menschlicher Hand.
+
+### Sicherheits- & Architektur-Auditing:
+* **XSS-Schutz:** Alle KI-importierten Begriffe, verbotenen Wörter (Veto-Begriffe) sowie die manuell eingegebenen Teamnamen werden vor dem Rendering im DOM konsequent über eine Maskierungsfunktion (`escapeHTML`) abgesichert. Dies verhindert DOM-XSS-Attacken, falls manipulierte oder ungeprüfte Datensätze in das Importfeld kopiert werden.
+* **Maximale Infrastruktur-Schonung (Zero-Server-Footprint):** Die App läuft zu 100 % clientseitig direkt im Browser des Lehrers. Die Steuerung des Beamer-Fensters erfolgt lokal über native Web-Schnittstellen. Es entsteht keinerlei Server-Traffic, was die schulische Lernplattform (ByCS) absolut null belastet.
+* **Datenschutz & Lokales Caching:** Das Spiel benötigt keine externe Datenbank. Die importierten Karten werden DSGVO-konform ausschließlich im lokalen Browserspeicher (`localStorage`) des Lehrgeräts gecacht. Es fließen zu keinem Zeitpunkt Unterrichts- oder Schuldaten ab.
+
+Fehler gefunden oder Verbesserungsvorschläge für den Unterrichtseinsatz? Pull Requests und fachliche Code Reviews sind jederzeit herzlich willkommen!
